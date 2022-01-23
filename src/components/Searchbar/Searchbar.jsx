@@ -1,18 +1,29 @@
 import React from 'react';
 // import React, { Component } from 'react';
+// import PropTypes from 'prop-types';
+import s from './Searchbar.module.css';
 
-<header class="searchbar">
-  <form class="form">
-    <button type="submit" class="button">
-      <span class="button-label">Search</span>
-    </button>
+const Searchbar = () => {
+  <header className={s.searchbar}>
+    <form className={s.form}>
+      <button type="submit" className={s.formButton}>
+        <span className={s.buttonLabel}>Search</span>
+      </button>
 
-    <input
-      class="input"
-      type="text"
-      autocomplete="off"
-      autofocus
-      placeholder="Search images and photos"
-    />
-  </form>
-</header>;
+      <input
+        className={s.formInput}
+        type="text"
+        autocomplete="off"
+        autofocus
+        placeholder="Search images and photos"
+      />
+    </form>
+  </header>;
+};
+
+export { default } from './App';
+
+Searchbar.propTypes = {
+  // options: PropTypes.objectOf(PropTypes.number),
+  // onLeaveFeedback: PropTypes.func.isRequired,
+};

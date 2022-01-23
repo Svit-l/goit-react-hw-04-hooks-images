@@ -3,13 +3,14 @@ import React from 'react';
 // import PropTypes from 'prop-types';
 import s from './Button.module.css';
 
-const ImageGallery = () => {
-  <ul className={s.gallery}>{/* <!-- Набор <li> с изображениями --> */}</ul>;
+const GalleryItem = () => {
+  <li class={s.galleryItem}>
+    <img src="" alt="" className={s.galleryItemImage} />
+  </li>;
 };
+export default GalleryItem;
 
-export default ImageGallery;
-
-ImageGallery.propTypes = {
+GalleryItem.propTypes = {
   //   options: PropTypes.objectOf(PropTypes.number),
   //   onLeaveFeedback: PropTypes.func.isRequired,
 };
