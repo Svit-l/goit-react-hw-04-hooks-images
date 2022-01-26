@@ -3,7 +3,8 @@ import React from 'react';
 // import PropTypes from 'prop-types';
 import s from './GalleryItem.module.css';
 
-const GalleryItem = () => {
+const GalleryItem = item => {
+  console.log(item);
   return (
     <li className={s.galleryItem}>
       <img src="" alt="" className={s.galleryItemImage} />
