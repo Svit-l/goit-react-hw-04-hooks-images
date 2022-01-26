@@ -3,10 +3,10 @@ import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 
 import s from './App.module.css';
 import ButtonLoadMore from '../ButtonLoadMore';
-import GalleryItem from '../GalleryItem';
+// import GalleryItem from '../GalleryItem';
 import ImageGallery from '../ImageGallery';
 import Loader from '../Loader';
-// import Modal from '../Modal';
+import Modal from '../Modal';
 import Searchbar from '../Searchbar';
 
 // API key: 24539365-a9ec93e41963d169f0a4900c0
@@ -26,6 +26,7 @@ class App extends Component {
     pictures: [],
     page: 1,
     loading: false,
+    showModal: false,
   };
 
   addFotos = searchString => {
@@ -33,18 +34,31 @@ class App extends Component {
     console.log(searchString);
   };
 
+  togleModal = () => {
+    this.setState(({ showModal }) => ({ showModal: !showModal }));
+  };
+
   render() {
-    const { addFotos } = this;
-    const { pictures, page, loading } = this.state;
+    const { addFotos, togleModal } = this;
+    const { pictures, page, loading, showModal } = this.state;
     return (
       <div className={s.app}>
+        {showModal && (
+          <Modal onClose={togleModal}>
+            <p>Content of modal</p>
+            <img src="" alt="" />
+            <button type="button" onClick={togleModal}>
+              Close Modal
+            </button>
+          </Modal>
+        )}
         <Searchbar onSubmit={addFotos} />
         <ImageGallery items={pictures} />
-
         <ButtonLoadMore />
         {loading && <Loader />}
-
-        {/* <Modal /> */}
+        <button type="button" onClick={togleModal}>
+          Open modal
+        </button>
       </div>
     );
   }
