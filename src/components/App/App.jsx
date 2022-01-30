@@ -12,10 +12,6 @@ import Loader from '../Loader';
 import Modal from '../Modal';
 import Searchbar from '../Searchbar';
 
-// Retrieving photos of "yellow flowers". The search term q needs to be URL encoded:
-// https://pixabay.com/api/?key=24539365-a9ec93e41963d169f0a4900c0&q=yellow+flowers&image_type=photo
-// https://pixabay.com/api/?q=cat&page=1&key=your_key&image_type=photo&orientation=horizontal&per_page=12
-
 // console.log(
 //   'https://pixabay.com/api/?key=24539365-a9ec93e41963d169f0a4900c0&q=yellow+flowers&image_type=photo',
 //   'https://pixabay.com/api/?q=cat&page=1&key=24539365-a9ec93e41963d169f0a4900c0&image_type=photo&orientation=horizontal&per_page=12'
@@ -31,6 +27,7 @@ class App extends Component {
     loading: false,
     showModal: false,
     searchString: '',
+    error: null,
   };
 
   handleSearchSubmit = searchString => {
@@ -41,20 +38,17 @@ class App extends Component {
     // console.log(searchString);
   };
 
-  componentDidMount() {
-    // this.setState({ loading: true });
-    // this.findImages();
-  }
+  // componentDidMount() {
+  //   this.setState({ loading: true });
+  //   this.findImages();
+  // }
 
   componentDidUpdate(_, prevState) {
-    if (prevState.page !== this.state.page) {
+    if (
+      prevState.page !== this.state.page ||
+      prevState.searchString !== this.state.searchString
+    ) {
       this.setState({ loading: true });
-      this.findImages();
-    }
-
-    if (prevState.searchString !== this.state.searchString) {
-      this.setState({ loading: true });
-      // console.log(this.state.searchString);
       this.findImages();
     }
   }
@@ -64,7 +58,14 @@ class App extends Component {
     fetch(
       `https://pixabay.com/api/?q=${searchString}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=${itemsPerPage}`
     )
-      .then(res => res.json())
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        }
+        return Promise.reject(
+          new Error('There are no pictures for this word. Enter another word!')
+        );
+      })
       .then(res =>
         this.setState({
           pictures: res.hits.map(item => ({
@@ -75,11 +76,7 @@ class App extends Component {
           })),
         })
       )
-      .catch(() =>
-        toast.warn('There are no pictures for this word. Enter another word!', {
-          theme: 'colored',
-        })
-      )
+      .catch(error => this.setState({ error }))
       .finally(() => this.setState({ loading: false }));
   };
 
@@ -93,7 +90,7 @@ class App extends Component {
 
   render() {
     const { toggleModal, handleSearchSubmit, changePage } = this;
-    const { pictures, loading, showModal } = this.state;
+    const { pictures, loading, showModal, error } = this.state;
 
     return (
       <div className={s.app}>
@@ -109,8 +106,6 @@ class App extends Component {
             </Modal>
           </>
         )}
-        {loading && <Loader />}
-
         <Searchbar propsSubmit={handleSearchSubmit} />
 
         {pictures.length > 0 ? (
@@ -121,6 +116,16 @@ class App extends Component {
         {pictures.length > 0 && !loading && (
           <ButtonLoadMore onClick={() => changePage()} />
         )}
+
+        {loading && <Loader />}
+        {error && <h1>{error.message}</h1>}
+        {/* // toast.warn(
+          //   'There are no pictures for this word. Enter another word!',
+          //   {
+          //     theme: 'colored',
+          //   }
+          // ) */}
+
         <ToastContainer
           position="top-center"
           autoClose={2500}
