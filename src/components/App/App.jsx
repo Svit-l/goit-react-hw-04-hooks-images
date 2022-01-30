@@ -1,11 +1,13 @@
 import { Component } from 'react';
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import s from './App.module.css';
-// import ButtonLoadMore from '../ButtonLoadMore';
+import ButtonLoadMore from '../ButtonLoadMore';
 // import BtnCloseModal from '../BtnCloseModal';
 // import GalleryItem from '../GalleryItem';
-// import ImageGallery from '../ImageGallery';
+import ImageGallery from '../ImageGallery';
 import Loader from '../Loader';
 import Modal from '../Modal';
 import Searchbar from '../Searchbar';
@@ -28,41 +30,60 @@ class App extends Component {
     page: 1,
     loading: false,
     showModal: false,
-    keyword: '',
+    searchString: '',
   };
 
-  componentDidMount() {
-    this.findImages();
-  }
+  handleSearchSubmit = searchString => {
+    this.setState({ searchString: searchString });
 
-  componentDidUpdate(_, prevState) {
-    if (prevState.page !== this.state.page) {
-      this.findImages();
-    }
-
-    if (prevState.keyword !== this.state.keyword) {
-      console.log(this.state.keyword);
-      this.findImages();
-    }
-  }
-
-  findImages = () => {
-    const { keyword, page } = this.state;
-    fetch(
-      `https://pixabay.com/api/?q=${keyword}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=${itemsPerPage}`
-    )
-      .then(res => res.json())
-      .then(res => this.setState({ pictures: res.hits }));
-  };
-
-  changeKeyword = searchString => {
-    this.setState({ keyword: searchString });
     this.setState({ page: 1 });
     // console.log('fotos loading');
     // console.log(searchString);
   };
 
-  ChangePage = () => {
+  componentDidMount() {
+    // this.setState({ loading: true });
+    // this.findImages();
+  }
+
+  componentDidUpdate(_, prevState) {
+    if (prevState.page !== this.state.page) {
+      this.setState({ loading: true });
+      this.findImages();
+    }
+
+    if (prevState.searchString !== this.state.searchString) {
+      this.setState({ loading: true });
+      // console.log(this.state.searchString);
+      this.findImages();
+    }
+  }
+
+  findImages = () => {
+    const { searchString, page } = this.state;
+    fetch(
+      `https://pixabay.com/api/?q=${searchString}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=${itemsPerPage}`
+    )
+      .then(res => res.json())
+      .then(res =>
+        this.setState({
+          pictures: res.hits.map(item => ({
+            id: item.id,
+            webformatURL: item.webformatURL,
+            largeImageURL: item.largeImageURL,
+            alt: item.tags,
+          })),
+        })
+      )
+      .catch(() =>
+        toast.warn('There are no pictures for this word. Enter another word!', {
+          theme: 'colored',
+        })
+      )
+      .finally(() => this.setState({ loading: false }));
+  };
+
+  changePage = () => {
     this.setState(({ page }) => ({ page: page + 1 }));
   };
 
@@ -71,11 +92,9 @@ class App extends Component {
   };
 
   render() {
-    const { toggleModal, changeKeyword, ChangePage } = this;
-    const { pictures, loading, showModal, page, keyword } = this.state;
-    console.log(page);
-    console.log(pictures);
-    console.log(keyword);
+    const { toggleModal, handleSearchSubmit, changePage } = this;
+    const { pictures, loading, showModal } = this.state;
+
     return (
       <div className={s.app}>
         {showModal && (
@@ -90,28 +109,25 @@ class App extends Component {
             </Modal>
           </>
         )}
-        <Searchbar onSubmit={changeKeyword} />
-        <ul className={s.gallery}>
-          {pictures.map(item => {
-            return (
-              <li key={item.id} item={item.id}>
-                <img
-                  src={item.webformatURL}
-                  alt={item.tags}
-                  className={s.galleryItemImage}
-                />
-              </li>
-            );
-          })}
-        </ul>
-        {/* <ImageGallery items={pictures} /> */}
-        <button type="button" onClick={() => ChangePage()}>
-          Load more
-        </button>
-        {/* <ButtonLoadMore onClick={() => this.setState({ page: page + 1 })} /> */}
-
         {loading && <Loader />}
 
+        <Searchbar propsSubmit={handleSearchSubmit} />
+
+        {pictures.length > 0 ? (
+          <ImageGallery items={pictures} />
+        ) : (
+          <div className={s.string}>Enter keyword!</div>
+        )}
+        {pictures.length > 0 && !loading && (
+          <ButtonLoadMore onClick={() => changePage()} />
+        )}
+        <ToastContainer
+          position="top-center"
+          autoClose={2500}
+          fontSize="12pt"
+          hideProgressBar
+          style={{ width: 'auto' }}
+        />
         <button type="button" onClick={toggleModal}>
           Open modal
         </button>

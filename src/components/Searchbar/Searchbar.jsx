@@ -1,11 +1,12 @@
 import { Component } from 'react';
-// import PropTypes from 'prop-types';
+import { toast } from 'react-toastify';
+import PropTypes from 'prop-types';
 import s from './Searchbar.module.css';
 
 class Searchbar extends Component {
-  // static propTypes = {
-  //   onSubmit: PropTypes.func.isRequired,
-  // };
+  static propTypes = {
+    propsSubmit: PropTypes.func.isRequired,
+  };
 
   state = {
     searchString: '',
@@ -14,13 +15,21 @@ class Searchbar extends Component {
   handleInputChange = e => {
     // console.log(e.currentTarget.value);
     const { value } = e.currentTarget;
-    this.setState({ searchString: value });
+    this.setState({ searchString: value.toLowerCase() });
+    // this.setState({ searchString: e.currentTarget.value.toLowerCase() });
   };
 
   handleSubmit = e => {
     e.preventDefault();
-    console.log(this.state);
-    this.props.onSubmit(this.state);
+    if (this.state.searchString.trim() === '') {
+      toast.warn('Enter keyword!', {
+        theme: 'colored',
+      });
+      return;
+    }
+    // console.log(this.state);
+    this.props.propsSubmit(this.state.searchString);
+    this.setState({ searchString: '' });
   };
 
   render() {

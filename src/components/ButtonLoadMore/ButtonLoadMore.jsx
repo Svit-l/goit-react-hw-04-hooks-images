@@ -1,9 +1,9 @@
 import React from 'react';
-// import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 
 import s from './ButtonLoadMore.module.css';
 
-const ButtonLoadMore = onClick => {
+const ButtonLoadMore = ({ onClick }) => {
   return (
     <button type="button" onClick={onClick} className={s.button}>
       Load more
@@ -14,6 +14,5 @@ const ButtonLoadMore = onClick => {
 export default ButtonLoadMore;
 
 ButtonLoadMore.propTypes = {
-  //   options: PropTypes.objectOf(PropTypes.number),
-  //   onLeaveFeedback: PropTypes.func.isRequired,
+  onClick: PropTypes.func.isRequired,
 };

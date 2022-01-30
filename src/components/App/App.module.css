@@ -3,4 +3,13 @@
   grid-template-columns: 1fr;
   grid-gap: 16px;
   padding-bottom: 24px;
+  justify-content: center;
+  text-align: center;
+}
+
+.string {
+  padding-top: 50px;
+  font-size: 25pt;
+  font-weight: 700;
+  color: rgb(204, 127, 194);
 }

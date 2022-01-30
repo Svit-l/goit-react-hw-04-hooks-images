@@ -1,19 +1,25 @@
 import React from 'react';
 
-// import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import s from './GalleryItem.module.css';
 
-const GalleryItem = item => {
-  console.log(item);
+const GalleryItem = ({ item }) => {
   return (
-    <li className={s.galleryItem}>
-      <img src="" alt="" className={s.galleryItemImage} />
+    <li>
+      <img
+        id={item.id}
+        src={item.webformatURL}
+        alt={item.tags}
+        className={s.galleryItemImage}
+      />
     </li>
   );
 };
 export default GalleryItem;
 
 GalleryItem.propTypes = {
-  //   options: PropTypes.objectOf(PropTypes.number),
-  //   onLeaveFeedback: PropTypes.func.isRequired,
+  item: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    src: PropTypes.string,
+  }),
 };
