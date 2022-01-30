@@ -18,24 +18,17 @@ import Searchbar from '../Searchbar';
 // );
 
 const API_KEY = '24539365-a9ec93e41963d169f0a4900c0';
-const itemsPerPage = 12;
 
 class App extends Component {
   state = {
+    searchString: '',
     pictures: [],
     page: 1,
+    itemsPerPage: 12,
     loading: false,
     showModal: false,
-    searchString: '',
+    selectedFhotoUrl: '',
     error: null,
-  };
-
-  handleSearchSubmit = searchString => {
-    this.setState({ searchString: searchString });
-
-    this.setState({ page: 1 });
-    // console.log('fotos loading');
-    // console.log(searchString);
   };
 
   // componentDidMount() {
@@ -44,27 +37,36 @@ class App extends Component {
   // }
 
   componentDidUpdate(_, prevState) {
-    if (
-      prevState.page !== this.state.page ||
-      prevState.searchString !== this.state.searchString
-    ) {
-      this.setState({ loading: true });
+    if (prevState.searchString !== this.state.searchString) {
+      this.setState({
+        page: 1,
+        itemsPerPage: 12,
+        pictures: [],
+        loading: true,
+        error: null,
+      });
       this.findImages();
+    }
+    if (prevState.itemsPerPage !== this.state.itemsPerPage) {
+      this.setState({ loading: true, error: null });
+      this.findImages();
+
+      window.scrollBy({ top: 1000, behavior: 'smooth' });
     }
   }
 
   findImages = () => {
-    const { searchString, page } = this.state;
+    const { searchString, page, itemsPerPage } = this.state;
     fetch(
       `https://pixabay.com/api/?q=${searchString}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=${itemsPerPage}`
     )
       .then(response => {
         if (response.ok) {
           return response.json();
-        }
-        return Promise.reject(
-          new Error('There are no pictures for this word. Enter another word!')
-        );
+        } else
+          return Promise.reject(
+            new Error('There are no pictures for this word')
+          );
       })
       .then(res =>
         this.setState({
@@ -80,17 +82,40 @@ class App extends Component {
       .finally(() => this.setState({ loading: false }));
   };
 
+  handleSearchSubmit = searchString => {
+    this.setState({ searchString: searchString });
+
+    this.setState({ page: 1 });
+    // console.log('fotos loading');
+    // console.log(searchString);
+  };
+
   changePage = () => {
-    this.setState(({ page }) => ({ page: page + 1 }));
+    this.setState(prevState => ({
+      // page: prevState.page + 1,
+      itemsPerPage: prevState.itemsPerPage + 12,
+    }));
   };
 
   toggleModal = () => {
     this.setState(({ showModal }) => ({ showModal: !showModal }));
   };
 
+  setModalImg = largeImgUrl => {
+    this.setState(() => ({
+      selectedFhotoUrl: largeImgUrl,
+    }));
+    this.toggleModal();
+  };
+  // selectedFhoto = index => {
+  //   this.setState({ selectedFhotoId: index });
+  //   this.toggleModal();
+  // };
+
   render() {
-    const { toggleModal, handleSearchSubmit, changePage } = this;
-    const { pictures, loading, showModal, error } = this.state;
+    const { toggleModal, handleSearchSubmit, changePage, setModalImg } = this;
+    const { pictures, loading, showModal, error, selectedFhotoUrl } =
+      this.state;
 
     return (
       <div className={s.app}>
@@ -98,33 +123,38 @@ class App extends Component {
           <>
             <Modal onClose={toggleModal}>
               {/* <BtnCloseModal onClose={toggleModal} /> */}
-              <button type="button" onClick={toggleModal}>
+              {/* <button type="button" onClick={toggleModal}>
                 Close Modal
               </button>
               <p>Content of modal</p>
-              <img src="" alt="" />
+              <img src="" alt="" /> */}
+              <img src={selectedFhotoUrl} alt="Large fhoto" />
             </Modal>
           </>
         )}
+
         <Searchbar propsSubmit={handleSearchSubmit} />
 
+        {loading && <Loader />}
+
+        {error && <h1>{error.message}</h1>}
+
         {pictures.length > 0 ? (
-          <ImageGallery items={pictures} />
+          <ImageGallery
+            items={pictures}
+            onClick={largeImageURL => {
+              setModalImg(largeImageURL);
+            }}
+          />
         ) : (
-          <div className={s.string}>Enter keyword!</div>
+          <div className={s.string}>
+            Enter keyword for search images and fhotos!
+          </div>
         )}
+
         {pictures.length > 0 && !loading && (
           <ButtonLoadMore onClick={() => changePage()} />
         )}
-
-        {loading && <Loader />}
-        {error && <h1>{error.message}</h1>}
-        {/* // toast.warn(
-          //   'There are no pictures for this word. Enter another word!',
-          //   {
-          //     theme: 'colored',
-          //   }
-          // ) */}
 
         <ToastContainer
           position="top-center"
@@ -133,9 +163,6 @@ class App extends Component {
           hideProgressBar
           style={{ width: 'auto' }}
         />
-        <button type="button" onClick={toggleModal}>
-          Open modal
-        </button>
       </div>
     );
   }

@@ -4,11 +4,20 @@ import PropTypes from 'prop-types';
 import s from './ImageGallery.module.css';
 import GalleryItem from '../GalleryItem';
 
-const ImageGallery = ({ items }) => {
+const ImageGallery = ({ items, onClick }) => {
   return (
     <ul className={s.gallery}>
-      {items.map(item => {
-        return <GalleryItem key={item.id} item={item} />;
+      {items.map(({ id, largeImageURL, webformatURL, alt }) => {
+        return (
+          <GalleryItem
+            id={id}
+            alt={alt}
+            webformatURL={webformatURL}
+            onClick={() => {
+              onClick(largeImageURL);
+            }}
+          />
+        );
       })}
     </ul>
   );
@@ -17,6 +26,7 @@ const ImageGallery = ({ items }) => {
 export default ImageGallery;
 
 ImageGallery.propTypes = {
+  onClick: PropTypes.func,
   items: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,

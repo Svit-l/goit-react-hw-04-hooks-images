@@ -3,13 +3,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import s from './GalleryItem.module.css';
 
-const GalleryItem = ({ item }) => {
+const GalleryItem = ({ id, webformatURL, alt, onClick }) => {
   return (
-    <li>
+    <li onClick={onClick}>
       <img
-        id={item.id}
-        src={item.webformatURL}
-        alt={item.tags}
+        id={id}
+        src={webformatURL}
+        alt={alt}
         className={s.galleryItemImage}
       />
     </li>
