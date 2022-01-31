@@ -1,12 +1,16 @@
 import { Component } from 'react';
 import { createPortal } from 'react-dom';
 
-// import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import s from './Modal.module.css';
 
 const modalRoot = document.querySelector('#modal-root');
 
 class Modal extends Component {
+  static propTypes = {
+    onClose: PropTypes.func.isRequired,
+  };
+
   componentDidMount() {
     // console.log('Modal componentDidMount');
     window.addEventListener('keydown', this.handleKeyDown);
@@ -42,8 +46,3 @@ class Modal extends Component {
 }
 
 export default Modal;
-
-Modal.propTypes = {
-  // options: PropTypes.objectOf(PropTypes.number),
-  // onLeaveFeedback: PropTypes.func.isRequired,
-};
