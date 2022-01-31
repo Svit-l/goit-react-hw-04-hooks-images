@@ -10,6 +10,7 @@ const ImageGallery = ({ items, onClick }) => {
       {items.map(({ id, largeImageURL, webformatURL, alt }) => {
         return (
           <GalleryItem
+            key={id}
             id={id}
             alt={alt}
             webformatURL={webformatURL}

@@ -2,20 +2,14 @@ import { Component } from 'react';
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { animateScroll as scroll } from 'react-scroll';
 
 import s from './App.module.css';
 import ButtonLoadMore from '../ButtonLoadMore';
-// import BtnCloseModal from '../BtnCloseModal';
-// import GalleryItem from '../GalleryItem';
 import ImageGallery from '../ImageGallery';
 import Loader from '../Loader';
 import Modal from '../Modal';
 import Searchbar from '../Searchbar';
-
-// console.log(
-//   'https://pixabay.com/api/?key=24539365-a9ec93e41963d169f0a4900c0&q=yellow+flowers&image_type=photo',
-//   'https://pixabay.com/api/?q=cat&page=1&key=24539365-a9ec93e41963d169f0a4900c0&image_type=photo&orientation=horizontal&per_page=12'
-// );
 
 const API_KEY = '24539365-a9ec93e41963d169f0a4900c0';
 
@@ -31,11 +25,6 @@ class App extends Component {
     error: null,
   };
 
-  // componentDidMount() {
-  //   this.setState({ loading: true });
-  //   this.findImages();
-  // }
-
   componentDidUpdate(_, prevState) {
     if (prevState.searchString !== this.state.searchString) {
       this.setState({
@@ -50,8 +39,7 @@ class App extends Component {
     if (prevState.itemsPerPage !== this.state.itemsPerPage) {
       this.setState({ loading: true, error: null });
       this.findImages();
-
-      window.scrollBy({ top: 1000, behavior: 'smooth' });
+      scroll.scrollMore(620);
     }
   }
 
@@ -68,16 +56,23 @@ class App extends Component {
             new Error('There are no pictures for this word')
           );
       })
-      .then(res =>
-        this.setState({
-          pictures: res.hits.map(item => ({
-            id: item.id,
-            webformatURL: item.webformatURL,
-            largeImageURL: item.largeImageURL,
-            alt: item.tags,
-          })),
-        })
-      )
+      .then(res => {
+        console.log(res);
+        if (res.total === 0) {
+          return toast.error('There are no pictures for this word', {
+            theme: 'colored',
+          });
+        } else
+          this.setState({
+            pictures: res.hits.map(item => ({
+              id: item.id,
+              webformatURL: item.webformatURL,
+              largeImageURL: item.largeImageURL,
+              alt: item.tags,
+            })),
+          });
+        return;
+      })
       .catch(error => this.setState({ error }))
       .finally(() => this.setState({ loading: false }));
   };
@@ -85,7 +80,7 @@ class App extends Component {
   handleSearchSubmit = searchString => {
     this.setState({ searchString: searchString });
 
-    this.setState({ page: 1 });
+    this.setState({ page: 1, itemsPerPage: 12 });
     // console.log('fotos loading');
     // console.log(searchString);
   };
@@ -107,27 +102,23 @@ class App extends Component {
     }));
     this.toggleModal();
   };
-  // selectedFhoto = index => {
-  //   this.setState({ selectedFhotoId: index });
-  //   this.toggleModal();
-  // };
 
   render() {
     const { toggleModal, handleSearchSubmit, changePage, setModalImg } = this;
-    const { pictures, loading, showModal, error, selectedFhotoUrl } =
-      this.state;
+    const {
+      pictures,
+      loading,
+      showModal,
+      error,
+      selectedFhotoUrl,
+      itemsPerPage,
+    } = this.state;
 
     return (
       <div className={s.app}>
         {showModal && (
           <>
             <Modal onClose={toggleModal}>
-              {/* <BtnCloseModal onClose={toggleModal} /> */}
-              {/* <button type="button" onClick={toggleModal}>
-                Close Modal
-              </button>
-              <p>Content of modal</p>
-              <img src="" alt="" /> */}
               <img src={selectedFhotoUrl} alt="Large fhoto" />
             </Modal>
           </>
@@ -152,7 +143,9 @@ class App extends Component {
           </div>
         )}
 
-        {pictures.length > 0 && !loading && (
+        {console.log(pictures.length)}
+
+        {pictures.length > itemsPerPage - 1 && !loading && (
           <ButtonLoadMore onClick={() => changePage()} />
         )}
 
