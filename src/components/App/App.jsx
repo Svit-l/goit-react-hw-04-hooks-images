@@ -35,11 +35,19 @@ class App extends Component {
         error: null,
       });
       this.findImages();
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'auto',
+      });
     }
-    if (prevState.itemsPerPage !== this.state.itemsPerPage) {
+    if (
+      prevState.itemsPerPage !== this.state.itemsPerPage &&
+      prevState.searchString === this.state.searchString
+    ) {
       this.setState({ loading: true, error: null });
       this.findImages();
-      scroll.scrollMore(620);
+      scroll.scrollMore(610);
     }
   }
 
@@ -57,7 +65,7 @@ class App extends Component {
           );
       })
       .then(res => {
-        console.log(res);
+        // console.log(res);
         if (res.total === 0) {
           return toast.error('There are no pictures for this word', {
             theme: 'colored',
@@ -143,7 +151,7 @@ class App extends Component {
           </div>
         )}
 
-        {console.log(pictures.length)}
+        {/* {console.log(pictures.length)} */}
 
         {pictures.length > itemsPerPage - 1 && !loading && (
           <ButtonLoadMore onClick={() => changePage()} />
