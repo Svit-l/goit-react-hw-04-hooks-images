@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-
+import { useState, useEffect, useCallback } from 'react';
+// import axios from 'axios';
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -11,6 +11,7 @@ import ButtonLoadMore from '../ButtonLoadMore';
 import ImageGallery from '../ImageGallery';
 import Loader from '../Loader';
 import Modal from '../Modal';
+import ModalImg from '../ModalImg';
 import Searchbar from '../Searchbar';
 
 const API_KEY = '24539365-a9ec93e41963d169f0a4900c0';
@@ -18,42 +19,22 @@ const API_KEY = '24539365-a9ec93e41963d169f0a4900c0';
 function App() {
   const [searchString, setSearchString] = useState('');
   const [pictures, setPictures] = useState([]);
-  const [page, setPpage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [page, setPage] = useState(1);
+  const [totalPictures, setTotalPictures] = useState(0);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedFhotoUrl, setSelectedFhotoUrl] = useState('');
+  const [selectedPhotoTags, setselectedPhotoTags] = useState('');
   const [error, setError] = useState(null);
 
-  // componentDidUpdate(_, prevState) {
-  //   if (prevState.searchString !== this.state.searchString) {
-  //     this.setState({
-  //       page: 1,
-  //       itemsPerPage: 12,
-  //       pictures: [],
-  //       loading: true,
-  //       error: null,
-  //     });
-  //     this.findImages();
-  //     window.scrollTo({
-  //       top: 0,
-  //       left: 0,
-  //       behavior: 'auto',
-  //     });
-  //   }
-  //   if (
-  //     prevState.itemsPerPage !== this.state.itemsPerPage &&
-  //     prevState.searchString === this.state.searchString
-  //   ) {
-  //     this.setState({ loading: true, error: null });
-  //     this.findImages();
-  //     scroll.scrollMore(610);
-  //   }
-  // }
-
-  const findImages = () => {
+  const findImages = useCallback(() => {
+    if (searchString === '') {
+      return;
+    }
+    setLoading(true);
+    setError(null);
     fetch(
-      `https://pixabay.com/api/?q=${searchString}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=${itemsPerPage}`
+      `https://pixabay.com/api/?q=${searchString}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
     )
       .then(response => {
         if (response.ok) {
@@ -64,72 +45,64 @@ function App() {
           );
       })
       .then(res => {
-        // console.log(res);
         if (res.total === 0) {
           return toast.error('There are no pictures for this word', {
             theme: 'colored',
           });
         } else
-          setPictures({
-            pictures: res.hits.map(item => ({
-              id: item.id,
-              webformatURL: item.webformatURL,
-              largeImageURL: item.largeImageURL,
-              alt: item.tags,
-            })),
+          setPictures(prevPictures => {
+            return page === 1 ? res.hits : [...prevPictures, ...res.hits];
           });
-        return;
+        page === 1 && setTotalPictures(res.totalHits);
+        console.log(res);
       })
       .catch(error => setError(error))
       .finally(() => setLoading(false));
-  };
+  }, [page, searchString]);
+
+  useEffect(() => {
+    findImages();
+  }, [findImages]);
 
   const handleSearchSubmit = searchString => {
     setSearchString(searchString);
-    setPpage(1);
-    setItemsPerPage(12);
+    setPage(1);
     // console.log('fotos loading');
     // console.log(searchString);
   };
 
   const changePage = () => {
-    setItemsPerPage(
-      prevState =>
-        // page: prevState.page + 1,
-        prevState + itemsPerPage
-    );
+    setPage(page + 1);
   };
 
   const toggleModal = () => {
     setShowModal(!showModal);
   };
 
-  const setModalImg = largeImgUrl => {
-    setSelectedFhotoUrl(largeImgUrl);
+  const setModalImg = (largeImageURL, tags) => {
+    setSelectedFhotoUrl(largeImageURL);
+    setselectedPhotoTags(tags);
     toggleModal();
   };
 
   return (
     <div className={s.app}>
+      {/* {console.log(pictures)} */}
       {showModal && (
         <>
           <Modal onClose={toggleModal}>
-            <img src={selectedFhotoUrl} alt="Large fhoto" />
+            <ModalImg src={selectedFhotoUrl} alt={selectedPhotoTags} />
           </Modal>
         </>
       )}
-
       <Searchbar propsSubmit={handleSearchSubmit} />
-
       {loading && <Loader />}
-
       {error && <h1>{error.message}</h1>}
-
-      {pictures.length > 0 ? (
+      {pictures.length !== 0 ? (
         <ImageGallery
           items={pictures}
-          onClick={largeImageURL => {
-            setModalImg(largeImageURL);
+          onClick={(largeImageURL, tags) => {
+            setModalImg(largeImageURL, tags);
           }}
         />
       ) : (
@@ -137,12 +110,18 @@ function App() {
           Enter keyword for search images and fhotos!
         </div>
       )}
-
       {/* {console.log(pictures.length)} */}
-
-      {pictures.length > itemsPerPage - 1 && !loading && (
+      {pictures.length < totalPictures && !loading && (
         <ButtonLoadMore onClick={() => changePage()} />
       )}
+
+      {page > 1
+        ? scroll.scrollMore(480)
+        : window.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: 'auto',
+          })}
 
       <ToastContainer
         position="top-center"
