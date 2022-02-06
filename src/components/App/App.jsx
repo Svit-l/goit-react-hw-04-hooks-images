@@ -54,7 +54,7 @@ function App() {
             return page === 1 ? res.hits : [...prevPictures, ...res.hits];
           });
         page === 1 && setTotalPictures(res.totalHits);
-        console.log(res);
+        // console.log(res);
       })
       .catch(error => setError(error))
       .finally(() => setLoading(false));
