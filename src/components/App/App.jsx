@@ -39,16 +39,16 @@ function App() {
       .then(response => {
         if (response.ok) {
           return response.json();
-        } else
-          return Promise.reject(
-            new Error('There are no pictures for this word')
-          );
+        } else setPictures([]);
+        return Promise.reject(new Error('There are no pictures for this word'));
       })
       .then(res => {
         if (res.total === 0) {
-          return toast.error('There are no pictures for this word', {
+          toast.error('There are no pictures for this word', {
             theme: 'colored',
           });
+          setPictures([]);
+          return;
         } else
           setPictures(prevPictures => {
             return page === 1 ? res.hits : [...prevPictures, ...res.hits];
@@ -111,7 +111,7 @@ function App() {
         </div>
       )}
       {/* {console.log(pictures.length)} */}
-      {pictures.length < totalPictures && !loading && (
+      {pictures.length > 0 && pictures.length < totalPictures && !loading && (
         <ButtonLoadMore onClick={() => changePage()} />
       )}
 
